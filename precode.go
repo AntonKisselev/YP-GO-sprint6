@@ -50,11 +50,8 @@ func handleTasksGet(w http.ResponseWriter, _ *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, errWrite := w.Write(resp)
-	if errWrite != nil {
-		http.Error(w, errWrite.Error(), http.StatusInternalServerError)
-		return
-	}
+	w.Write(resp)
+
 }
 
 func handleAddTask(w http.ResponseWriter, r *http.Request) {
@@ -72,6 +69,12 @@ func handleAddTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, ok := tasks[task.ID]
+	if ok {
+		http.Error(w, fmt.Sprintf("task with id %s already exists", task.ID), http.StatusBadRequest)
+		return
+	}
+
 	tasks[task.ID] = task
 
 	w.Header().Set("Content-Type", "application/json")
@@ -83,7 +86,7 @@ func handleGetTask(w http.ResponseWriter, r *http.Request) {
 
 	task, ok := tasks[id]
 	if !ok {
-		http.Error(w, "Task not found", http.StatusNoContent)
+		http.Error(w, "Task not found", http.StatusBadRequest)
 		return
 	}
 
@@ -95,11 +98,7 @@ func handleGetTask(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, errWrite := w.Write(resp)
-	if errWrite != nil {
-		http.Error(w, errWrite.Error(), http.StatusInternalServerError)
-		return
-	}
+	w.Write(resp)
 }
 
 func handleDeleteTask(w http.ResponseWriter, r *http.Request) {
